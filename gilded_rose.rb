@@ -17,9 +17,10 @@ class GildedRose
     @items = items
   end
 
-  def update_quality()
+  def update_quality
     @items.each do |item|
       item.sell_in -= 1 unless item.name == 'Sulfuras'
+
       case item.name
       when 'Aged Brie'
         update_aged_brie(item)
@@ -28,7 +29,7 @@ class GildedRose
       when 'Conjured'
         update_conjured_item(item)
       when 'Sulfuras'
-        # Sulfuras не потребує оновлення
+        # "Sulfuras" не потребує оновлення
       else
         update_normal_item(item)
       end
@@ -43,7 +44,7 @@ class GildedRose
   end
 
   def update_backstage_passes(item)
-    if item.sell_in <= 0
+    if item.sell_in < 0
       item.quality = 0
     elsif item.sell_in < 5
       increase_quality(item, 3)
@@ -65,10 +66,10 @@ class GildedRose
   end
 
   def increase_quality(item, amount = 1)
-    item.quality += amount if item.quality < 50
+    item.quality += amount if item.quality + amount <= 50
   end
 
   def decrease_quality(item, amount = 1)
-    item.quality -= amount if item.quality > 0
+    item.quality -= amount if item.quality - amount >= 0
   end
 end
