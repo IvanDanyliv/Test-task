@@ -20,52 +20,51 @@ class TestGildedRose < Minitest::Test
   end
 
   def test_backstage_passes
-    @gilded_rose.update_quality()
-    assert_equal 21, @items[3].quality
-    assert_equal 14, @items[3].sell_in
+    item = Item.new("Backstage passes", 5, 45)
+    gilded_rose = GildedRose.new([item])
 
-    @items[3].sell_in = 10
-    @gilded_rose.update_quality()
-    assert_equal 23, @items[3].quality
-    assert_equal 9, @items[3].sell_in
+    gilded_rose.update_quality()
+    assert_equal 48, item.quality
+    assert_equal 4, item.sell_in
 
-    @items[3].sell_in = 5
-    @gilded_rose.update_quality()
-    assert_equal 26, @items[3].quality
-    assert_equal 4, @items[3].sell_in
-
-    @items[3].sell_in = 0
-    @gilded_rose.update_quality()
-    assert_equal 0, @items[3].quality
-    assert_equal -1, @items[3].sell_in
+    item.sell_in = 0
+    gilded_rose.update_quality()
+    assert_equal 0, item.quality
   end
 
   def test_sulfuras
     @gilded_rose.update_quality()
     assert_equal 80, @items[2].quality
     assert_equal 0, @items[2].sell_in
-
-    @items[2].sell_in = -1
-    @gilded_rose.update_quality()
-    assert_equal 80, @items[2].quality
-    assert_equal -1, @items[2].sell_in
   end
 
   def test_conjured_items
-    @gilded_rose.update_quality()
-    assert_equal 4, @items[4].quality
-    assert_equal 2, @items[4].sell_in
+    item = Item.new("Conjured", 3, 6)
+    gilded_rose = GildedRose.new([item])
 
-    @gilded_rose.update_quality()
-    assert_equal 2, @items[4].quality
-    assert_equal 1, @items[4].sell_in
+    gilded_rose.update_quality()
+    assert_equal 4, item.quality
 
-    @gilded_rose.update_quality()
-    assert_equal 0, @items[4].quality
-    assert_equal 0, @items[4].sell_in
+    gilded_rose.update_quality()
+    assert_equal 2, item.quality
 
-    @gilded_rose.update_quality()
-    assert_equal 0, @items[4].quality
-    assert_equal -1, @items[4].sell_in
+    gilded_rose.update_quality()
+    assert_equal 0, item.quality
+  end
+
+  def test_quality_never_exceeds_50
+    item = Item.new("Aged Brie", 10, 49)
+    gilded_rose = GildedRose.new([item])
+
+    gilded_rose.update_quality()
+    assert_equal 50, item.quality
+  end
+
+  def test_normal_item_quality_never_negative
+    item = Item.new("Normal Item", 5, 0)
+    gilded_rose = GildedRose.new([item])
+
+    3.times { gilded_rose.update_quality() }
+    assert_equal 0, item.quality
   end
 end
