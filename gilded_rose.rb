@@ -14,94 +14,35 @@ end
 
 class GildedRose
   def initialize(items)
-    @items = items.map { |item| ItemFactory.create(item) }
+    @items = items
   end
 
   def update_quality
-    @items.each(&:update_quality)
-  end
-end
+    @items.each do |item|
+      next if item.name == "Sulfuras, Hand of Ragnaros"  # Sulfuras не змінюється
 
-class ItemFactory
-  def self.create(item)
-    case item.name
-    when 'Aged Brie' then AgedBrie.new(item)
-    when 'Backstage passes' then BackstagePasses.new(item)
-    when 'Conjured' then ConjuredItem.new(item)
-    when 'Sulfuras' then Sulfuras.new(item)
-    else NormalItem.new(item)
+      if item.name == "Aged Brie"
+        item.quality += 1 if item.quality < 50
+      elsif item.name == "Backstage passes to a TAFKAL80ETC concert"
+        if item.sell_in > 10
+          item.quality += 1
+        elsif item.sell_in > 5
+          item.quality += 2
+        elsif item.sell_in > 0
+          item.quality += 3
+        else
+          item.quality = 0
+        end
+      elsif item.name.start_with?("Conjured")
+        item.quality -= item.sell_in > 0 ? 2 : 4
+      else
+        item.quality -= item.sell_in > 0 ? 1 : 2
+      end
+
+      item.quality = 0 if item.quality < 0
+      item.quality = 50 if item.quality > 50
+
+      item.sell_in -= 1 unless item.name == "Sulfuras, Hand of Ragnaros"
     end
-  end
-end
-
-class BaseItem
-  MAX_QUALITY = 50
-  MIN_QUALITY = 0
-
-  attr_reader :item
-
-  def initialize(item)
-    @item = item
-  end
-
-  def update_quality
-    update_sell_in
-    update_quality_value
-  end
-
-  protected
-
-  def decrease_quality(amount = 1)
-    item.quality = [item.quality - amount, MIN_QUALITY].max
-  end
-
-  def increase_quality(amount = 1)
-    item.quality = [item.quality + amount, MAX_QUALITY].min
-  end
-
-  def update_sell_in
-    item.sell_in -= 1
-  end
-
-  def expired?
-    item.sell_in < 0
-  end
-end
-
-class NormalItem < BaseItem
-  def update_quality_value
-    decrease_quality(expired? ? 2 : 1)
-  end
-end
-
-class AgedBrie < BaseItem
-  def update_quality_value
-    increase_quality(expired? ? 2 : 1)
-  end
-end
-
-class BackstagePasses < BaseItem
-  def update_quality_value
-    if expired?
-      item.quality = 0
-    elsif item.sell_in < 5
-      increase_quality(3)
-    elsif item.sell_in < 10
-      increase_quality(2)
-    else
-      increase_quality(1)
-    end
-  end
-end
-
-class ConjuredItem < BaseItem
-  def update_quality_value
-    decrease_quality(expired? ? 4 : 2)
-  end
-end
-
-class Sulfuras < BaseItem
-  def update_quality
-    # Легендарний предмет, не змінюється
   end
 end
